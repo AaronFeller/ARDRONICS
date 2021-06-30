@@ -1,0 +1,185 @@
+## ARDRA-Analyzer ##############################################################
+##
+## Analyzes ARDRA base-pair lengths from samples and compares the results
+## to a library of known samples.
+## Input: CSV files of sample and library
+## Output: CSV files of comparisons and graphical representation of UPGMA
+## Current Version: 1.4 Fully Functioning
+
+## Old Versions:
+## Version 1.3 jaccard_UPGMA_formatting
+## Version 1.2 rework_for_distance_matrix
+## Version 1.1 looping_work
+## Version 1.0 beginning_work
+
+## Required libraries:
+#install.packages("ade4")
+#install.packages("ape")
+#if (!requireNamespace("BiocManager", quietly = TRUE))
+#  install.packages("BiocManager")
+#BiocManager::install("DECIPHER")
+#install.packages("phylogram")
+
+## Libraries:
+library(ade4)
+library(ape)
+library(DECIPHER)
+library(phylogram)
+
+## SETTINGS: ###################################################################
+{
+work_dir = "/home/aaron/R/ARDRA-Analyzer"
+lib_file = "20210505_lib_clip.csv"
+samp_file = "20210614_combined_samples.csv"
+## Plus/Minus Variable
+plus_minus <- 10
+## Minimum Length
+min_bp <- 100
+## Number of Enzyme Cuts
+enz_count <- 2
+
+## Set working Directory #######################################################
+setwd(work_dir)
+
+## Uploading Library Data ######################################################
+lib_data = read.csv(lib_file, header=TRUE)
+
+## Uploading Sample Data #######################################################
+sample_data = read.csv(samp_file, header=TRUE)
+
+## Combine two files
+merge_data <- merge.data.frame(#lib_data, 
+                               sample_data, 
+                               all.x = T, 
+                               all.y = T, 
+                               no.dups = T)
+
+## Change data point under minimum length to NA ################################
+merge_data[merge_data <= min_bp] <- NA
+}
+
+
+###FULL START###
+{
+
+## Initialize Library ##########################################################
+{
+jaccard_data <- matrix(data = NA, 
+                       nrow = nrow(merge_data)+2, 
+                       ncol = 10000)
+"Bands" -> jaccard_data[1,1]
+"Enzyme" -> jaccard_data[2,1]
+}
+## Bring in organism name from merged data #####################################
+for (i in 1:nrow(merge_data)) {
+  toString(merge_data[i, 1]) -> jaccard_data[i+2,1]
+}
+
+## Bring in band lengths/enzymes for Jaccard index #############################
+for (k in 1:nrow(merge_data)) {
+  for (l in 3:ncol(merge_data))  {
+    if (!is.na(merge_data[k,l]))    { 
+
+#THIS IS WHERE THE EDITS NEED TO BE
+      
+            jaccard_data[1, l-1+(k-1)*(ncol(merge_data)-2)] <- 
+        toString(merge_data[k, l])
+      jaccard_data[2, l-1+(k-1)*(ncol(merge_data)-2)] <- 
+        toString(merge_data[k, 2])
+    }
+  }
+}
+
+## Clean-Up ####################################################################
+{
+## Delete NA Columns
+jaccard_data <- jaccard_data[, ! apply(jaccard_data, 2, 
+                                       function(x)all(is.na(x)))]
+## Delete Duplicate Rows
+jaccard_data <- unique(jaccard_data[])
+## Delete Duplicate Data Points
+jaccard_data <- unique(jaccard_data, MARGIN = 2)
+## Fill with 0s
+jaccard_data[is.na(jaccard_data)] <- 0
+}
+## Compare band lengths and create binary ######################################
+for (i in 1:nrow(merge_data)) {
+  for (j in 3:ncol(merge_data))  { 
+    if (is.na(merge_data[i, j])){next}
+    for (k in 2:ncol(jaccard_data))    {
+      if (toString(merge_data[i , 2]) == toString(jaccard_data[2 , k])
+        &&
+        as.numeric(merge_data[i, j]) <= (as.numeric(jaccard_data[1 , k])
+                                         +plus_minus)
+        &&
+        as.numeric(merge_data[i, j]) >= (as.numeric(jaccard_data[1 , k])
+                                         -plus_minus)) { 
+        jaccard_data[trunc(3+((i-1)/enz_count)), k] <- 1}
+    }
+  }
+}
+
+## Create File for Jaccard Analysis ############################################
+{
+jaccard_matrix <- jaccard_data
+jaccard_matrix <- jaccard_matrix[-1,]                         #removes a row
+jaccard_matrix <- jaccard_matrix[-1,]                         #removes a row
+rownames(jaccard_matrix) <- jaccard_matrix[,1]                #names the rows
+jaccard_matrix <- jaccard_matrix[,-1]                         #removes a column
+jaccard_matrix <- as.data.frame.matrix(jaccard_matrix)        #change to df
+jaccard_matrix[] <- lapply(jaccard_matrix, function(x){if(is.factor(x)) 
+  as.numeric(as.character(x)) else x})                        #converts to numbs                        
+}
+## Jaccard Analysis from R package 'ade4' ######################################
+{
+# Method 1 is Jaccard index (1901) S3 coefficient of Gower & Legendre
+m1 <- jaccard_matrix
+# For Methods 1-10 see readme for package ade4  
+d <- dist.binary(m1, 
+                 method = 1, 
+                 diag = FALSE, 
+                 upper = FALSE) 
+}
+
+## Apply hierarchical clustering ###############################################
+{
+hc <- hclust(dist(d))
+#hcd = as.dendrogram(hc)
+
+## Plot the Dendrogram #########################################################
+jaccard_result <- plot(hc, 
+                       labels=m1$ID, 
+                       hang = 0, 
+                       cex = .55,)
+#jaccard_hcd <- plot(hcd, labels=m$ID, cex = .55, type = "triangle")
+}
+
+###FULL STOP###
+}
+
+## Export CSV of the Distance Matrix ###########################################
+ dist_matrix_as_df <- as.data.frame(as.matrix(d))
+# write.csv(dist_matrix_as_df,"/home/aaron/R/ARDRA-Analyzer/dissm1.csv", 
+#          row.names = TRUE)
+
+# dissm1 <- dist_matrix_as_df
+
+# ## THIS IS IT! #################################################################
+# WriteDendrogram(hcd, file = "testingDendroFileSave")
+# tets1 <- ReadDendrogram("testingDendroFileSave")
+# y <- as.phylo(tets1)
+# 
+# all.equal.phylo(a, b)
+# comparePhylo(a, b)
+# 
+# ## CADM.global() ## This might be the comparison! ##############################
+# 
+# 
+# a <- rtree(5)
+# b <- rtree(5)
+# A <- cophenetic(a)
+# B <- cophenetic(b)
+# x <- rownames(A)
+# B <- B[x, x]
+# M <- rbind(A, B)
+# CADM.global(M, 2, 5)
