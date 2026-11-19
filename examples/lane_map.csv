@@ -1,0 +1,7 @@
+lane,role,sample,sample_type,expected_match
+1,ladder,,,
+2,control,control_a,isolate,reference_a
+3,sample,unknown_b,isolate,
+4,empty,,,
+5,unused,MW_right,,
+6,ladder_secondary,,,

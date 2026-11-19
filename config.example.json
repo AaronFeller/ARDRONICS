@@ -1,0 +1,27 @@
+{
+  "fasta": "data/references.fa",
+  "output_dir": "results/run",
+  "gel": {
+    "image": "data/gel.jpg",
+    "enzyme": "HaeIII",
+    "lane_map": "examples/lane_map.csv",
+    "experiment_metadata": "examples/experiment_metadata.json",
+    "ladder": "100bp",
+    "polarity": "bright",
+    "prominence": 2.5,
+    "min_band_distance": 3
+  },
+  "digest": {
+    "enzymes": "HaeIII,HhaI",
+    "forward_primer": "AGAGTTTGATCMTGGCTCAG",
+    "reverse_primer": "GGTTACCTTGTTACGACTT",
+    "primer_mismatches": 2,
+    "double_digest": ["HaeIII+HhaI"]
+  },
+  "matching": {
+    "tolerance": 20,
+    "min_bp": 100,
+    "top_n": 3,
+    "combine_enzymes": false
+  }
+}

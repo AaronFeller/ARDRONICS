@@ -1,0 +1,8 @@
+{
+  "gel_percent": 1.5,
+  "gel_matrix": "agarose",
+  "voltage": 100,
+  "run_time_minutes": 45,
+  "operator": "Your name",
+  "notes": "Free-form experimental notes; these values are recorded but not used for calibration"
+}

@@ -1,0 +1,71 @@
+# Private experimental inputs and generated analysis outputs
+data/
+results/
+config.local.json
+my_config.json
+my_lanes.csv
+my_metadata.json
+
+# Credentials and local environment settings
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*_rsa
+*_ed25519
+.ssh/
+
+# Python environments and build/test artifacts
+.venv/
+__pycache__/
+*.py[cod]
+*.egg
+*.egg-info/
+.eggs/
+build/
+dist/
+pip-wheel-metadata/
+.pytest_cache/
+.mypy_cache/
+.pyre/
+.ruff_cache/
+.tox/
+.nox/
+.coverage
+coverage.xml
+coverage.json
+htmlcov/
+.ipynb_checkpoints/
+
+# Editors and operating systems
+.vscode/
+.idea/
+.history/
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Legacy R local state
+.Rhistory
+.RData
+.Ruserdata
+.Rproj.user/
+
+# LaTeX intermediate files and generated manuscript PDFs
+*.aux
+*.bbl
+*.blg
+*.out
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+paper/paper.pdf
+paper/paper_markdown.pdf
+
+# Temporary files and logs
+*.log
+*.tmp
+.old/
